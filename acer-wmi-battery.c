@@ -153,14 +153,15 @@ get_battery_health_control_status(struct battery_info *bat_status)
 		return AE_ERROR;
 	}
 
-	ret = *((struct get_battery_health_control_status_output *)
-			obj->buffer.pointer);
 	if (obj->buffer.length != 8) {
 		pr_err("WMI battery status call returned a buffer of "
 		       "unexpected length %d\n", obj->buffer.length);
 		kfree(obj);
 		return AE_ERROR;
 	}
+
+	ret = *((struct get_battery_health_control_status_output *)
+			obj->buffer.pointer);
 
 	bat_status->health_mode = ret.uFunctionList & HEALTH_MODE ?
 					  ret.uFunctionStatus[0] > 0 :
@@ -208,14 +209,16 @@ static acpi_status set_battery_health_control(u8 function, bool function_status)
 		return AE_ERROR;
 	}
 
-	ret = *((struct set_battery_health_control_output *)obj->buffer.pointer);
-
 	if (obj->buffer.length != 4) {
 		pr_err("WMI battery status set operation returned "
 			"a buffer of unexpected length %d\n",
 			obj->buffer.length);
 		status = AE_ERROR;
+		kfree(obj);
+		return status;
 	}
+
+	ret = *((struct set_battery_health_control_output *)obj->buffer.pointer);
 
 	kfree(obj);
 
